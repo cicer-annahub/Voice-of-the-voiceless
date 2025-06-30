@@ -1,0 +1,78 @@
+ <p class="text-gray-600 mb-4 text-center">
+    Enter a sentence below to see the "to be" verb and the past participle color-coded.
+    This tool focuses on the **present tense passive voice**.
+  </p>
+  <ul class="list-disc list-inside text-gray-700 mb-6">
+    <li>The "to be" verb (<span class="blue-text">am, is, are</span>) will be highlighted in <span class="blue-text">blue</span>.</li>
+    <li>The past participle will be highlighted in <span class="green-text">green</span>.</li>
+    <li>
+        <strong>Note:</strong> This tool uses a basic algorithm and may not correctly identify all irregular past participles.
+        It primarily looks for -ed endings and a small list of common irregular verbs immediately following 'to be' verbs.
+    </li>
+  </ul>
+
+  <div class="mb-4">
+    <label for="sentenceInput" class="block text-gray-700 text-sm font-bold mb-2">
+      Enter your sentence:
+    </label>
+    <textarea
+      id="sentenceInput"
+      class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-blue-500"
+      rows="4"
+      placeholder="e.g., The ball is thrown by the boy. Or, Books are read by many people."
+    ></textarea>
+  </div>
+
+  <div class="flex justify-center mb-6">
+    <button
+      id="analyzeButton"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out shadow-lg transform hover:scale-105"
+    >
+      Analyze Sentence
+    </button>
+  </div>
+
+  <div id="outputArea" class="bg-gray-100 p-6 rounded-lg border border-gray-200 min-h-[100px] flex items-center justify-center text-gray-800 text-lg">
+    <p class="text-gray-500">Your color-coded sentence will appear here.</p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Get references to DOM elements
+    const sentenceInput = document.getElementById('sentenceInput');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const outputArea = document.getElementById('outputArea');
+
+    // Define lists for "to be" verbs and common irregular past participles
+    const toBeVerbs = ['am', 'is', 'are'];
+    const irregularPastParticiples = [
+      'beaten', 'become', 'begun', 'bent', 'bidden', 'bound', 'bitten', 'bled', 'blown',
+      'broken', 'brought', 'built', 'burnt', 'bought', 'caught', 'chosen', 'come',
+      'cost', 'cut', 'dealt', 'dug', 'done', 'drawn', 'drunk', 'driven', 'eaten',
+      'fallen', 'fed', 'felt', 'fought', 'found', 'flown', 'forbidden', 'forgotten',
+      'forgiven', 'frozen', 'gotten', 'given', 'gone', 'grown', 'hung', 'heard',
+      'hidden', 'hit', 'held', 'hurt', 'kept', 'known', 'laid', 'led', 'left',
+      'lent', 'let', 'lain', 'lost', 'made', 'meant', 'met', 'paid', 'put', 'read',
+      'ridden', 'rung', 'risen', 'run', 'said', 'seen', 'sold', 'sent', 'shaken',
+      'shown', 'shrunk', 'shut', 'sung', 'sunk', 'sat', 'slept', 'slid', 'smelled',
+      'sown', 'spoken', 'spent', 'spun', 'split', 'spread', 'sprung', 'stood', 'stolen',
+      'stuck', 'stung', 'struck', 'sworn', 'swept', 'swum', 'taken', 'taught', 'torn',
+      'told', 'thought', 'thrown', 'understood', 'woken', 'worn', 'wept', 'won', 'wound',
+      'written', 'borne'
+    ];
+
+    // Event listener for the analyze button
+    analyzeButton.addEventListener('click', () => {
+      // Get the sentence from the input, trim whitespace, and convert to lowercase for easier comparison
+      const sentence = sentenceInput.value.trim().toLowerCase();
+      outputArea.innerHTML = ''; // Clear previous output
+
+      if (!sentence) {
+        outputArea.innerHTML = '<p class="text-red-500">Please enter a sentence to analyze.</p>';
+        return;
+      }
+
+      // Split the sentence into words, removing punctuation at the end of words for better matching
+      // Using regex to split by spaces and also handle punctuation immediately following a word
+      const words = sentence.split(/
