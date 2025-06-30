@@ -1,0 +1,96 @@
+<div class="instruction-box">
+      <p class="text-gray-800 mb-2">
+          <strong>How to Play:</strong> Read the sentence below.
+      </p>
+      <ul class="list-disc list-inside text-gray-700">
+          <li>Click <strong>"Yes, it is!"</strong> if you think the sentence is in the **present passive voice**.</li>
+          <li>Click <strong>"No, it's not!"</strong> if you think it's in the active voice or a different tense.</li>
+      </ul>
+      <p class="text-gray-800 mt-2">
+          Then, click <strong>"Next Sentence"</strong> to try another one!
+      </p>
+  </div>
+
+  <div class="mb-6 bg-gray-100 p-6 rounded-lg border border-gray-200 text-gray-800 text-xl text-center min-h-[80px] flex items-center justify-center">
+    <p id="challengeSentence" class="italic">Click "Next Sentence" to begin!</p>
+  </div>
+
+  <div class="flex justify-center space-x-4 mb-6">
+    <button
+      id="yesButton"
+      class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out shadow-lg transform hover:scale-105"
+    >
+      Yes, it is!
+    </button>
+    <button
+      id="noButton"
+      class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out shadow-lg transform hover:scale-105"
+    >
+      No, it's not!
+    </button>
+  </div>
+
+  <div id="feedbackArea" class="bg-blue-50 p-4 rounded-lg border border-blue-200 min-h-[60px] text-gray-800 text-center flex items-center justify-center mb-6">
+    <p class="text-gray-600">Your feedback will appear here.</p>
+  </div>
+
+  <div class="flex justify-center">
+    <button
+      id="nextButton"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out shadow-lg transform hover:scale-105"
+    >
+      Next Sentence
+    </button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // DOM elements
+    const challengeSentenceDisplay = document.getElementById('challengeSentence');
+    const yesButton = document.getElementById('yesButton');
+    const noButton = document.getElementById('noButton');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const nextButton = document.getElementById('nextButton');
+
+    // Sentence data: [sentence, isPassiveVoicePresentTense (true/false)]
+    const sentences = [
+      { text: "The book is written by a famous author.", isPassive: true },
+      { text: "They play soccer every day.", isPassive: false },
+      { text: "Coffee is grown in Brazil.", isPassive: true },
+      { text: "She bought a new car yesterday.", isPassive: false },
+      { text: "The windows are cleaned every week.", isPassive: true },
+      { text: "He is teaching English.", isPassive: false }, // Present Continuous Active
+      { text: "The pizza is eaten by everyone.", isPassive: true },
+      { text: "Birds sing beautifully.", isPassive: false },
+      { text: "I am given a new task.", isPassive: true },
+      { text: "The meeting was held last Monday.", isPassive: false }, // Past Passive
+      { text: "Lessons are learned quickly.", isPassive: true },
+      { text: "We are building a house.", isPassive: false } // Present Continuous Active
+    ];
+
+    let currentSentenceIndex = -1; // To start with the first sentence on "Next" click
+
+    // Define lists for "to be" verbs and common irregular past participles
+    const toBeVerbs = ['am', 'is', 'are'];
+    const irregularPastParticiples = [
+      'beaten', 'become', 'begun', 'bent', 'bidden', 'bound', 'bitten', 'bled', 'blown',
+      'broken', 'brought', 'built', 'burnt', 'bought', 'caught', 'chosen', 'come',
+      'cost', 'cut', 'dealt', 'dug', 'done', 'drawn', 'drunk', 'driven', 'eaten',
+      'fallen', 'fed', 'felt', 'fought', 'found', 'flown', 'forbidden', 'forgotten',
+      'forgiven', 'frozen', 'gotten', 'given', 'gone', 'grown', 'hung', 'heard',
+      'hidden', 'hit', 'held', 'hurt', 'kept', 'known', 'laid', 'led', 'left',
+      'lent', 'let', 'lain', 'lost', 'made', 'meant', 'met', 'paid', 'put', 'read',
+      'ridden', 'rung', 'risen', 'run', 'said', 'seen', 'sold', 'sent', 'shaken',
+      'shown', 'shrunk', 'shut', 'sung', 'sunk', 'sat', 'slept', 'slid', 'smelled',
+      'sown', 'spoken', 'spent', 'spun', 'split', 'spread', 'sprung', 'stood', 'stolen',
+      'stuck', 'stung', 'struck', 'sworn', 'swept', 'swum', 'taken', 'taught', 'torn',
+      'told', 'thought', 'thrown', 'understood', 'woken', 'worn', 'wept', 'won', 'wound',
+      'written', 'borne'
+    ];
+
+    // Function to analyze and color-code a sentence
+    function analyzeAndColorSentence(sentenceText) {
+      const lowerCaseSentence = sentenceText.toLowerCase();
+      // Split by spaces, handle punctuation by stripping it from word end for matching
+      const words = lowerCaseSentence.split(/
