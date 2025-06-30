@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Unspoken Verb: Passive Voice Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Tailwind gray-900 */
+            color: #e2e8f0; /* Tailwind gray-200 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
+            overflow-y: auto; /* Allow scrolling if content overflows */
+        }
+
+        .game-container {
+            background-color: #2d3748; /* Tailwind gray-800 */
+            border-radius: 1rem; /* rounded-xl */
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 700px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        h1 {
+            color: #63b3ed; /* Tailwind blue-300 */
+            font-size: 2.5rem; /* text-4xl */
+            font-weight: 700; /* font-bold */
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .instructions, .score {
+            font-size: 1.125rem; /* text-lg */
+            color: #cbd5e0; /* Tailwind gray-300 */
+        }
+
+        .question-box {
+            background-color: #4a5568; /* Tailwind gray-700 */
+            border-radius: 0.75rem; /* rounded-lg */
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600; /* font-semibold */
+            color: #fbd38d; /* Tailwind orange-200 */
+            min-height: 80px; /* Ensure some height for stability */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column on small screens */
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (min-width: 640px) { /* sm breakpoint */
+            .options-grid {
+                grid-template-columns: repeat(2, 1fr); /* Two columns on larger screens */
+            }
+        }
+
+        .option-button {
+            background-color: #4299e1; /* Tailwind blue-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem; /* rounded-md */
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-button:hover:not(.disabled) {
+            background-color: #3182ce; /* Tailwind blue-600 */
+            transform: translateY(-2px);
+        }
+
+        .option-button:active:not(.disabled) {
+            transform: translateY(0);
+        }
+
+        .option-button.correct {
+            background-color: #48bb78; /* Tailwind green-500 */
+        }
+
+        .option-button.incorrect {
+            background-color: #e53e3e; /* Tailwind red-500 */
+        }
+
+        .option-button.disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .feedback-box {
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .next-button {
+            background-color: #ecc94b; /* Tailwind yellow-400 */
+            color: #2d3748; /* Tailwind gray-800 */
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .next-button:hover:not(.disabled) {
+            background-color: #d69e2e; /* Tailwind yellow-600 */
+            transform: translateY(-2px);
+        }
+
+        .next-button:active:not(.disabled) {
+            transform: translateY(0);
+        }
+
+        .next-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Custom Message Box for alerts */
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden; /* Hidden by default */
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s ease;
+        }
+
+        .message-box-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .message-box-content {
+            background-color: #2d3748;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .message-box-overlay.visible .message-box-content {
+            transform: translateY(0);
+        }
+
+        .message-box-content h2 {
+            font-size: 2rem;
+            color: #63b3ed;
+            margin-bottom: 1rem;
+        }
+
+        .message-box-content p {
+            font-size: 1.25rem;
+            color: #cbd5e0;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .message-box-content button {
+            background-color: #4299e1;
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: none;
+        }
+
+        .message-box-content button:hover {
+            background-color: #3182ce;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>The Unspoken Verb</h1>
+        <p class="instructions">Transform the active voice sentence into its passive voice equivalent in the present tense.</p>
+
+        <div class="score">Score: <span id="currentScore">0</span> / <span id="totalQuestions"></span></div>
+
+        <div id="questionBox" class="question-box">Loading question...</div>
+
+        <div id="optionsGrid" class="options-grid">
+            <!-- Options will be dynamically loaded here -->
+        </div>
+
+        <div id="feedbackBox" class="feedback-box"></div>
+
+        <button id="nextButton" class="next-button" disabled>Next Question</button>
+    </div>
+
+    <!-- Custom Message Box -->
+    <div id="messageBoxOverlay" class="message-box-overlay">
+        <div class="message-box-content">
+            <h2 id="messageBoxTitle"></h2>
+            <p id="messageBoxText"></p>
+            <button id="messageBoxCloseButton">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Data: Questions and Answers
+        const questions = [
+            {
+                active: "The cat eats the mouse.",
+                passive: "The mouse is eaten by the cat.",
+                options: [
+                    "The mouse was eaten by the cat.",
+                    "The mouse is eaten by the cat.",
+                    "The cat is eating the mouse.",
+                    "The mouse eats the cat."
+                ]
+            },
+            {
+                active: "They build houses.",
+                passive: "Houses are built by them.",
+                options: [
+                    "Houses were built by them.",
+                    "Houses are built by them.",
+                    "They are building houses.",
+                    "Houses build them."
+                ]
+            },
+            {
+                active: "She writes a letter.",
+                passive: "A letter is written by her.",
+                options: [
+                    "A letter was written by her.",
+                    "A letter is written by her.",
+                    "She is writing a letter.",
+                    "A letter writes her."
+                ]
+            },
+            {
+                active: "We clean the room every day.",
+                passive: "The room is cleaned by us every day.",
+                options: [
+                    "The room was cleaned by us every day.",
+                    "The room is cleaned by us every day.",
+                    "We are cleaning the room every day.",
+                    "The room cleans us every day."
+                ]
+            },
+            {
+                active: "The students read books.",
+                passive: "Books are read by the students.",
+                options: [
+                    "Books were read by the students.",
+                    "Books are read by the students.",
+                    "The students are reading books.",
+                    "Books read the students."
+                ]
+            },
+            {
+                active: "The chef prepares delicious food.",
+                passive: "Delicious food is prepared by the chef.",
+                options: [
+                    "Delicious food was prepared by the chef.",
+                    "Delicious food is prepared by the chef.",
+                    "The chef is preparing delicious food.",
+                    "Delicious food prepares the chef."
+                ]
+            },
+            {
+                active: "My mother bakes cakes.",
+                passive: "Cakes are baked by my mother.",
+                options: [
+                    "Cakes were baked by my mother.",
+                    "Cakes are baked by my mother.",
+                    "My mother is baking cakes.",
+                    "Cakes bake my mother."
+                ]
+            },
+            {
+                active: "The gardener waters the plants.",
+                passive: "The plants are watered by the gardener.",
+                options: [
+                    "The plants were watered by the gardener.",
+                    "The plants are watered by the gardener.",
+                    "The gardener is watering the plants.",
+                    "The plants water the gardener."
+                ]
+            },
+            {
+                active: "People speak English all over the world.",
+                passive: "English is spoken all over the world.",
+                options: [
+                    "English was spoken all over the world.",
+                    "English is spoken all over the world.",
+                    "People are speaking English all over the world.",
+                    "English speaks people all over the world."
+                ]
+            },
+            {
+                active: "The dog guards the house.",
+                passive: "The house is guarded by the dog.",
+                options: [
+                    "The house was guarded by the dog.",
+                    "The house is guarded by the dog.",
+                    "The dog is guarding the house.",
+                    "The house guards the dog."
+                ]
+            }
+        ];
+
+        // DOM Elements
+        const questionBox = document.getElementById('questionBox');
+        const optionsGrid = document.getElementById('optionsGrid');
+        const feedbackBox = document.getElementById('feedbackBox');
+        const nextButton = document.getElementById('nextButton');
+        const currentScoreSpan = document.getElementById('currentScore');
+        const totalQuestionsSpan = document.getElementById('totalQuestions');
+
+        // Message Box Elements
+        const messageBoxOverlay = document.getElementById('messageBoxOverlay');
+        const messageBoxTitle = document.getElementById('messageBoxTitle');
+        const messageBoxText = document.getElementById('messageBoxText');
+        const messageBoxCloseButton = document.getElementById('messageBoxCloseButton');
+
+        // Game State Variables
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answerSelected = false; // To prevent multiple selections per question
+
+        /**
+         * Shuffles an array in place.
+         * @param {Array} array - The array to shuffle.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        /**
+         * Loads the current question and its options into the UI.
+         */
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                endGame();
+                return;
+            }
+
+            answerSelected = false;
+            feedbackBox.textContent = '';
+            nextButton.disabled = true;
+            nextButton.classList.add('disabled'); // Add disabled styling
+
+            const q = questions[currentQuestionIndex];
+            questionBox.textContent = q.active;
+
+            // Clear previous options
+            optionsGrid.innerHTML = '';
+
+            // Shuffle options to randomize their order
+            shuffleArray(q.options);
+
+            // Create and append option buttons
+            q.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option-button');
+                // Store the listener function reference if you ever need to remove it
+                const listener = () => checkAnswer(option, button);
+                button.addEventListener('click', listener);
+                // button.listener = listener; // Optional: store reference on button if needed for removal later
+                optionsGrid.appendChild(button);
+            });
+
+            updateScoreDisplay();
+        }
+
+        /**
+         * Checks the selected answer against the correct passive voice.
+         * @param {string} selectedOption - The text of the option button clicked.
+         * @param {HTMLElement} clickedButton - The button element that was clicked.
+         */
+        function checkAnswer(selectedOption, clickedButton) {
+            if (answerSelected) return; // Prevent multiple selections
+
+            answerSelected = true;
+            const correctPassive = questions[currentQuestionIndex].passive;
+
+            // Disable all option buttons after selection
+            Array.from(optionsGrid.children).forEach(button => {
+                button.classList.add('disabled');
+                // Removed: button.removeEventListener('click', button.listener); // This line was problematic
+            });
+
+            if (selectedOption === correctPassive) {
+                score++;
+                feedbackBox.textContent = "Correct! Well done.";
+                feedbackBox.style.color = '#48bb78'; // Tailwind green-500
+                clickedButton.classList.add('correct');
+            } else {
+                feedbackBox.textContent = `Incorrect. The correct answer was: "${correctPassive}"`;
+                feedbackBox.style.color = '#e53e3e'; // Tailwind red-500
+                clickedButton.classList.add('incorrect');
+                // Highlight the correct answer if it wasn't the one clicked
+                Array.from(optionsGrid.children).forEach(button => {
+                    if (button.textContent === correctPassive) {
+                        button.classList.add('correct');
+                    }
+                });
+            }
+            updateScoreDisplay();
+            nextButton.disabled = false;
+            nextButton.classList.remove('disabled'); // Remove disabled styling
+        }
+
+        /**
+         * Updates the score display.
+         */
+        function updateScoreDisplay() {
+            currentScoreSpan.textContent = score;
+            totalQuestionsSpan.textContent = questions.length;
+        }
+
+        /**
+         * Moves to the next question or ends the game.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        /**
+         * Ends the game and displays final score.
+         */
+        function endGame() {
+            showMessageBox(
+                "Game Over!",
+                `You scored ${score} out of ${questions.length} questions.`,
+                () => {
+                    // Reset game for replay
+                    currentQuestionIndex = 0;
+                    score = 0;
+                    loadQuestion();
+                }
+            );
+        }
+
+        /**
+         * Displays a custom modal message box.
+         * @param {string} title - The title of the message box.
+         * @param {string} message - The message content.
+         * @param {function} onCloseCallback - Function to call when the OK button is clicked.
+         */
+        function showMessageBox(title, message, onCloseCallback) {
+            messageBoxTitle.textContent = title;
+            messageBoxText.textContent = message;
+            messageBoxOverlay.classList.add('visible');
+
+            const handleClose = () => {
+                messageBoxOverlay.classList.remove('visible');
+                messageBoxCloseButton.removeEventListener('click', handleClose); // Clean up listener
+                if (onCloseCallback) {
+                    onCloseCallback();
+                }
+            };
+            messageBoxCloseButton.addEventListener('click', handleClose);
+        }
+
+        // Event Listeners
+        nextButton.addEventListener('click', nextQuestion);
+        window.addEventListener('load', loadQuestion); // Initial load
+
+    </script>
